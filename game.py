@@ -13,7 +13,7 @@ ball_radius = 20
 ball_speed = 6
 ball_rect = int(ball_radius * 2 ** 0.5)
 ball = pygame.Rect(rnd(ball_rect, WIDTH - ball_rect), HEIGHT // 2, ball_rect, ball_rect)
-dx, dy = 1, -1  # коэффициенты, отвечающие за направление даижения шарика и за смену направления при столкновении.
+dx, dy = 1, -1  # коэффициенты, отвечающие за направление даижения шарика и за смену направления при столкновении..
 # параметры блоков
 block_list = [pygame.Rect(10 + 110 * i, 10 + 60 * j, 100, 40) for i in range(8) for j in range(5)]
 color_list = [(0, 100, 0) for i in range(8) for j in range(5)]
