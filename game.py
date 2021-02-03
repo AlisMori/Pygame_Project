@@ -24,7 +24,7 @@ clock = pygame.time.Clock()
 
 
 def detect_collision(dx, dy, ball, rect):
-    if dx > 0:  # если шарик сталкивается с блоком горизонтально
+    if dx > 0:  # если шарик сталкивается с блоком горизонтально.
         delta_x = ball.right - rect.left
     else:
         delta_x = rect.right - ball.left
