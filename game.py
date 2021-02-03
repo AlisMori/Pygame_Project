@@ -72,11 +72,27 @@ while True:
         fps += 2  # увеличение скорости после каждого удара
     # вывод победа \ поражение игрока
     if ball.bottom > HEIGHT:
-        print('GAME OVER!')
-        exit()
+        pygame.init()
+        sc = pygame.display.set_mode((WIDTH, HEIGHT))
+        clock = pygame.time.Clock()
+
+        font = pygame.font.Font(None, 20)
+        text = font.render("Game over!", True, [255, 255, 255])
+        textpos = (10, 10)
+        sc.blit(text, textpos)
+        key = pygame.key.get_pressed()
+        if key[pygame.K_KP_ENTER]:
+            pass
+        if key[pygame.K_ESCAPE]:
+            exit()
     elif not len(block_list):
-        print('WIN!!!')
-        exit()
+        pygame.init()
+        sc = pygame.display.set_mode((WIDTH, HEIGHT))
+        clock = pygame.time.Clock()
+
+        font = pygame.font.Font(None, 20)
+        text = font.render("Win!", True, [255, 255, 255])
+        textpos = (10, 10)
     # движение доски
     key = pygame.key.get_pressed()
     if key[pygame.K_LEFT] and paddle.left > 0:
