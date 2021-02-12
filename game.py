@@ -1,8 +1,107 @@
 import pygame
 from random import randrange as rnd
+import sys
+import os
+import random
 
 
-def play_game():  # зацикливание игры
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
+def load_image(name, colorkey=None):
+    fullname = os.path.join(name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
+
+
+money = 0
+
+
+def start_screen():  # Заставка
+    WIDTH, HEIGHT = 900, 650
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock = pygame.time.Clock()
+    intro_text = ["Правила игры",
+                  "В этой игре Вам необходимо уничтожить все блоки так, чтобы мячик не упал.",
+                  "Перемещение платформы с помощью клавиш вперед и назад."]
+
+    fon = pygame.transform.scale(load_image('1.jpg'), (WIDTH // 2, HEIGHT // 2))
+    screen.blit(fon, (200, 200))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, True, pygame.Color('White'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                play_game(money)
+        pygame.display.flip()
+        clock.tick(50)
+
+
+def end_screen(flag, money):
+    WIDTH, HEIGHT = 900, 650
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock = pygame.time.Clock()
+    if flag == 1:
+        intro_text = ["Вы проиграли.",
+                      "Чтобы начать заново, нажмини пробел."
+                      "Вы накопили : ", str(money)]
+        fon = load_image('lose.png')
+        screen.blit(fon, (100, 250))
+    else:
+        intro_text = ["Вы выиграли.",
+                      "Чтобы начать заново, нажмини пробел."
+                      "Вы накопили : ", str(money)]
+        fon = load_image('win.png')
+        screen.blit(fon, (100, 250))
+
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, True, pygame.Color('White'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                play_game(money)
+        pygame.display.flip()
+        clock.tick(50)
+
+
+def play_game(money):  # зацикливание игры
     WIDTH, HEIGHT = 900, 650
     fps = 60
     # параметры доски
@@ -47,10 +146,11 @@ def play_game():  # зацикливание игры
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
-        sc.fill('blue')
+        sc.fill('lightgreen')
+
         # рисование основных предметов
         [pygame.draw.rect(sc, color_list[color], block) for color, block in enumerate(block_list)]
-        pygame.draw.rect(sc, pygame.Color('orange'), paddle)
+        pygame.draw.rect(sc, pygame.Color('lightskyblue'), paddle)
         pygame.draw.circle(sc, pygame.Color('white'), ball.center, ball_radius)
         # движение шарика
         ball.x += ball_speed * dx
@@ -64,6 +164,7 @@ def play_game():  # зацикливание игры
         # отскок от доски
         if ball.colliderect(paddle) and dy > 0:
             dx, dy = detect_collision(dx, dy, ball, paddle)
+            money += 1
         # отскок послк удара о блок
         hit_index = ball.collidelist(block_list)
         if hit_index != -1:
@@ -71,30 +172,13 @@ def play_game():  # зацикливание игры
             hit_color = color_list.pop(hit_index)
             dx, dy = detect_collision(dx, dy, ball, hit_rect)
             fps += 2  # увеличение скорости после каждого удара
+            money += 1
         # вывод победа \ поражение игрока
         if ball.bottom > HEIGHT:
-            pygame.init()
-            sc = pygame.display.set_mode((WIDTH, HEIGHT))
-            clock = pygame.time.Clock()
-
-            font = pygame.font.Font(None, 20)
-            text = font.render("Game over!", True, [255, 255, 255])
-            textpos = (10, 10)
-            sc.blit(text, textpos)
-            key = pygame.key.get_pressed()
-            if key[pygame.K_SPACE]:
-                play_game()
-            if key[pygame.K_ESCAPE]:
-                exit()
+            end_screen(1, money)
 
         elif not len(block_list):
-            pygame.init()
-            sc = pygame.display.set_mode((WIDTH, HEIGHT))
-            clock = pygame.time.Clock()
-
-            font = pygame.font.Font(None, 20)
-            text = font.render("Win!", True, [255, 255, 255])
-            textpos = (10, 10)
+            end_screen(0, money)
         # движение доски
         key = pygame.key.get_pressed()
         if key[pygame.K_LEFT] and paddle.left > 0:
@@ -106,4 +190,4 @@ def play_game():  # зацикливание игры
         clock.tick(fps)
 
 
-play_game()
+start_screen()
