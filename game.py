@@ -30,14 +30,17 @@ def start_screen():  # Заставка
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
+    name = 'Arkanoid'
     intro_text = ["Правила игры",
                   "В этой игре Вам необходимо уничтожить все блоки так, чтобы мячик не упал.",
-                  "Перемещение платформы с помощью клавиш вперед и назад."]
-
+                  "Перемещение платформы с помощью клавиш вперед и назад.",
+                  "Мячик начнет движение после нажатия клавиши Enter."]
     fon = pygame.transform.scale(load_image('1.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
-    text_coord = 50
+    text_coord = 400
+    string_rendered = font.render(name, True, pygame.Color('White'))
+    screen.blit(string_rendered, (420, 100))
     for line in intro_text:
         string_rendered = font.render(line, True, pygame.Color('White'))
         intro_rect = string_rendered.get_rect()
@@ -65,10 +68,10 @@ def end_screen(flag):
     clock = pygame.time.Clock()
     if flag == 1:
         intro_text = ["Вы проиграли.",
-                      "Чтобы начать заново, нажмини пробел."]
+                      "Чтобы начать сначала, нажмите пробел."]
     else:
         intro_text = ["Вы выиграли.",
-                      "Чтобы начать заново, нажмини пробел."]
+                      "Чтобы начать сначала, нажмите пробел."]
     fon = pygame.transform.scale(load_image('1.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
@@ -104,14 +107,16 @@ def play_game():  # зацикливание игры
     ball_radius = 20
     ball_speed = 6
     ball_rect = int(ball_radius * 2 ** 0.5)
-    ball = pygame.Rect(rnd(ball_rect, WIDTH - ball_rect), HEIGHT // 2, ball_rect, ball_rect)
+    ball = pygame.Rect(WIDTH // 2 - 15, HEIGHT - 6 * paddle_h, ball_rect, ball_rect)
+    movement = False
     dx, dy = 1, -1  # коэффициенты, отвечающие за направление даижения шарика и за смену направления при столкновении...
     # параметры блоков
     block_list = [pygame.Rect(10 + 110 * i, 10 + 60 * j, 100, 40) for i in range(8) for j in range(5)]
-    color_list = [(0, 100, 0) for i in range(8) for j in range(5)]
+    color_list = [(rnd(30, 256), rnd(30, 256), rnd(30, 256)) for i in range(8) for j in range(5)]
 
     pygame.init()
     sc = pygame.display.set_mode((WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image('3.jpg'), (WIDTH, HEIGHT))
     clock = pygame.time.Clock()
 
     def detect_collision(dx, dy, ball, rect):
@@ -138,13 +143,18 @@ def play_game():  # зацикливание игры
             if event.type == pygame.QUIT:
                 exit()
         sc.fill('blue')
+        sc.blit(fon, (0, 0))
         # рисование основных предметов
         [pygame.draw.rect(sc, color_list[color], block) for color, block in enumerate(block_list)]
         pygame.draw.rect(sc, pygame.Color('orange'), paddle)
         pygame.draw.circle(sc, pygame.Color('white'), ball.center, ball_radius)
-        # движение шарика
-        ball.x += ball_speed * dx
-        ball.y += ball_speed * dy
+        key = pygame.key.get_pressed()
+        if key[pygame.K_RETURN]:
+            movement = True
+        if movement:
+            # движение шарика
+            ball.x += ball_speed * dx
+            ball.y += ball_speed * dy
         # отскок шарика справа слева
         if ball.centerx < ball_radius or ball.centerx > WIDTH - ball_radius:
             dx = -dx
